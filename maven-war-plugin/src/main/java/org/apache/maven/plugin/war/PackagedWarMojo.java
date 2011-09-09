@@ -1,5 +1,24 @@
 package org.apache.maven.plugin.war;
 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +46,7 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	 * @required
 	 */
 	private String outputDirectory;
+	
 	/**
 	 * The name of the generated WAR.
 	 *
@@ -34,6 +54,7 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	 * @required
 	 */
 	private String warName;
+	
 	/**
 	 * The comma separated list of tokens to exclude from the WAR before
 	 * packaging. This option may be used to implement the skinny WAR use
@@ -43,6 +64,7 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	 * @since 2.1-alpha-2
 	 */
 	private String packagingExcludes;
+	
 	/**
 	 * The comma separated list of tokens to include in the WAR before
 	 * packaging. By default everything is included. This option may be used
@@ -99,12 +121,12 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
         buildExplodedWebapp( getWebappDirectory() );
         
 		File warArchive = createWarArchive();
-		attachWarArtifact(warArchive);
+		attachWarArtifact( warArchive );
 
-		if (hasClassesArchive()) {
+		if ( hasClassesArchive() ) {
 			File classesArchive = createClassesArchive();
-			if (classesArchive != null) {
-				attachClassesArtifact(classesArchive);
+			if ( classesArchive != null ) {
+				attachClassesArtifact( classesArchive );
 			}
 		}
 	}
@@ -121,20 +143,20 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 
 	private File createClassesArchive() throws MojoExecutionException {
 		ClassesPackager packager = new ClassesPackager();
-		File directory = packager.getClassesDirectory(getWebappDirectory());
-		if (!directory.exists()) {
+		File directory = packager.getClassesDirectory( getWebappDirectory() );
+		if ( !directory.exists() ) {
 			return null;
 		}
 		File file = getTargetClassesFile();
 		getLog().info("Packaging classes");
-		packager.packageClasses(directory, file, getJarArchiver(),
-				getProject(), getArchive());
+		packager.packageClasses( directory, file, getJarArchiver(),
+				getProject(), getArchive() );
 		return file;
 	}
 	
-	protected abstract void attachWarArtifact(File warArchive);
+	protected abstract void attachWarArtifact( File warArchive );
 	
-	protected abstract void attachClassesArtifact(File classesArchive);
+	protected abstract void attachClassesArtifact( File classesArchive );
 
 	private void configureWarArchiver() throws ArchiverException {
         warArchiver.addDirectory( getWebappDirectory(), getPackagingIncludes(), getPackagingExcludes() );
@@ -148,41 +170,41 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	}
 
 	public String[] getPackagingExcludes() {
-		List<String> excludes = new ArrayList<String>();
-		excludes.addAll(getDefinedPackagingExcludes());
-		excludes.addAll(getImplicitPackagingExcludes());
-		return excludes.toArray(new String[excludes.size()]);
+		List excludes = new ArrayList();
+		excludes.addAll( getDefinedPackagingExcludes() );
+		excludes.addAll( getImplicitPackagingExcludes() );
+		return (String[])excludes.toArray( new String[excludes.size()] );
 	}
 
-	private List<String> getDefinedPackagingExcludes() {
-		if (StringUtils.isEmpty(packagingExcludes)) {
-			return Collections.emptyList();
+	private List getDefinedPackagingExcludes() {
+		if (StringUtils.isEmpty( packagingExcludes )) {
+			return Collections.EMPTY_LIST;
 		}
-		return Arrays.asList(StringUtils.split(packagingExcludes, ","));
+		return Arrays.asList( StringUtils.split( packagingExcludes, "," ) );
 	}
 
-	protected List<String> getImplicitPackagingExcludes() {
-		return Collections.emptyList();
+	protected List getImplicitPackagingExcludes() {
+		return Collections.EMPTY_LIST;
 	}
 
 
 	public String[] getPackagingIncludes() {
-		if (StringUtils.isEmpty(packagingIncludes)) {
+		if (StringUtils.isEmpty( packagingIncludes) ) {
 			return new String[] { "**" };
 		}
-		return StringUtils.split(packagingIncludes, ",");
+		return StringUtils.split( packagingIncludes, "," );
 	}
 	
-	protected final File getTargetFile(File basedir, String finalName,
-			String classifier, String extension) {
-		if (classifier == null) {
+	protected final File getTargetFile( File basedir, String finalName,
+			String classifier, String extension ) {
+		if ( classifier == null ) {
 			classifier = "";
-		} else if (classifier.trim().length() > 0
-				&& !classifier.startsWith("-")) {
+		} else if ( classifier.trim().length() > 0
+				&& !classifier.startsWith( "-" ) ) {
 			classifier = "-" + classifier;
 		}
 
-		return new File(basedir, finalName + classifier + "." + extension);
+		return new File( basedir, finalName + classifier + "." + extension );
 	}
 	
 	/**
@@ -202,11 +224,11 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	
 	protected abstract boolean isWebXmlRequired();
 
-	public void setPackagingIncludes(String packagingIncludes) {
+	public void setPackagingIncludes( String packagingIncludes ) {
 	    this.packagingIncludes = packagingIncludes;
 	}
 
-	public void setPackagingExcludes(String packagingExcludes) {
+	public void setPackagingExcludes( String packagingExcludes ) {
 	    this.packagingExcludes = packagingExcludes;
 	}
 
@@ -214,7 +236,7 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	    return outputDirectory;
 	}
 
-	public void setOutputDirectory(String outputDirectory) {
+	public void setOutputDirectory( String outputDirectory ) {
 	    this.outputDirectory = outputDirectory;
 	}
 
@@ -222,7 +244,7 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	    return warName;
 	}
 
-	public void setWarName(String warName) {
+	public void setWarName( String warName ) {
 	    this.warName = warName;
 	}
 
@@ -230,7 +252,7 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	    return warArchiver;
 	}
 
-	public void setWarArchiver(WarArchiver warArchiver) {
+	public void setWarArchiver( WarArchiver warArchiver ) {
 	    this.warArchiver = warArchiver;
 	}
 
@@ -238,7 +260,7 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	    return projectHelper;
 	}
 
-	public void setProjectHelper(MavenProjectHelper projectHelper) {
+	public void setProjectHelper( MavenProjectHelper projectHelper ) {
 	    this.projectHelper = projectHelper;
 	}
 
