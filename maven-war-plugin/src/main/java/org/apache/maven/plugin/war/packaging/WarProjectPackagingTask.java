@@ -57,12 +57,14 @@ public class WarProjectPackagingTask
     private final File containerConfigXML;
 
     private final String id;
+    
+    private final boolean packageArtifacts;
 
     private Overlay currentProjectOverlay;
 
 
     public WarProjectPackagingTask( Resource[] webResources, File webXml, File containerConfigXml,
-                                    Overlay currentProjectOverlay )
+                                    Overlay currentProjectOverlay, boolean packageArtifacts )
     {
         if ( webResources != null )
         {
@@ -76,6 +78,7 @@ public class WarProjectPackagingTask
         this.containerConfigXML = containerConfigXml;
         this.currentProjectOverlay = currentProjectOverlay;
         this.id = currentProjectOverlay.getId();
+        this.packageArtifacts = packageArtifacts;
     }
 
     public void performPackaging( WarPackagingContext context )
@@ -185,9 +188,12 @@ public class WarProjectPackagingTask
     protected void handleArtifacts( WarPackagingContext context )
         throws MojoExecutionException
     {
-        ArtifactsPackagingTask task = new ArtifactsPackagingTask( context.getProject().getArtifacts(),
-                                                                  currentProjectOverlay );
-        task.performPackaging( context );
+    	if (packageArtifacts)
+    	{
+	        ArtifactsPackagingTask task = new ArtifactsPackagingTask( context.getProject().getArtifacts(),
+	                                                                  currentProjectOverlay );
+	        task.performPackaging( context );
+    	}
     }
 
     /**

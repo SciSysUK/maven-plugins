@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -317,6 +319,28 @@ public abstract class AbstractWarMojo
 
     private final Overlay currentProjectOverlay = Overlay.createInstance();
 
+    /**
+     * @component
+     */
+    private ArtifactResolver artifactResolver;
+
+    /**
+     * Location of the local repository.
+     *
+     * @parameter expression="${localRepository}"
+     * @readonly
+     * @required
+     */
+    private ArtifactRepository localArtifactRepository;
+
+    /**
+     * List of Remote Repositories used by the resolver
+     *
+     * @parameter expression="${project.remoteArtifactRepositories}"
+     * @readonly
+     * @required
+     */
+    private List remoteArtifactRepositories;
 
     public Overlay getCurrentProjectOverlay()
     {
@@ -441,7 +465,7 @@ public abstract class AbstractWarMojo
         getLog().info( "Assembling webapp [" + project.getArtifactId() + "] in [" + webappDirectory + "]" );
 
         final OverlayManager overlayManager =
-            new OverlayManager( overlays, project, dependentWarIncludes, dependentWarExcludes, currentProjectOverlay );
+            new OverlayManager( overlays, project, dependentWarIncludes, dependentWarExcludes, currentProjectOverlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories );
         final List packagingTasks = getPackagingTasks( overlayManager );
         List defaultFilterWrappers = null;
         try
@@ -510,7 +534,7 @@ public abstract class AbstractWarMojo
             if ( overlay.isCurrentProject() )
             {
                 packagingTasks.add( new WarProjectPackagingTask( webResources, webXml, containerConfigXML,
-                                                                 currentProjectOverlay ) );
+                                                                 currentProjectOverlay, getPackageArtifacts() ) );
             }
             else
             {
@@ -521,7 +545,11 @@ public abstract class AbstractWarMojo
     }
 
 
-    /**
+    protected boolean getPackageArtifacts() {
+		return true;
+	}
+
+	/**
      * Returns a <tt>List</tt> of the {@link org.apache.maven.plugin.war.packaging.WarPostPackagingTask}
      * instances to invoke to perform the post-packaging.
      *

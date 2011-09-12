@@ -68,4 +68,8 @@ public class WarOverlayMojo extends PackagedWarMojo {
 	protected List getImplicitPackagingExcludes() {
 		return Collections.singletonList( "WEB-INF/classes/**" );
 	}
+	
+	protected boolean getPackageArtifacts() {
+		return false;
+	}
 }
