@@ -87,6 +87,8 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	 */
 	protected MavenProjectHelper projectHelper;
 	
+	private ClassesPackager packager = new ClassesPackager();
+	
     /**
      * Executes the PackagedWarMojo on the current project.
      *
@@ -142,7 +144,6 @@ public abstract class PackagedWarMojo extends AbstractWarMojo {
 	}
 
 	private File createClassesArchive() throws MojoExecutionException {
-		ClassesPackager packager = new ClassesPackager();
 		File directory = packager.getClassesDirectory( getWebappDirectory() );
 		if ( !directory.exists() ) {
 			return null;

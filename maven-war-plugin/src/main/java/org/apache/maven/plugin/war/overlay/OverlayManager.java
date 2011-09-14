@@ -98,12 +98,13 @@ public class OverlayManager
         }
         this.project = project;
 
-        this.artifactsOverlays = getOverlaysAsArtifacts();
         
         this.artifactFactory = artifactFactory;
         this.artifactResolver = artifactResolver;
         this.localArtifactRepository = localArtifactRepository;
         this.remoteArtifactRepositories = remoteArtifactRepositories;
+        
+        this.artifactsOverlays = getOverlaysAsArtifacts();
 
         // Initialize
         initialize( defaultIncludes, defaultExcludes, currentProjectOverlay );
