@@ -19,26 +19,20 @@ package org.apache.maven.plugin.war.overlay;
  * under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.war.Overlay;
-import org.apache.maven.plugin.war.packaging.AbstractWarPackagingTask;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.war.Overlay;
+import org.apache.maven.plugin.war.packaging.AbstractWarPackagingTask;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Manages the overlays.
@@ -62,14 +56,8 @@ public class OverlayManager
 
     private final List artifactsOverlays;
     
-    private ArtifactFactory artifactFactory;
+    private final WebContentResolver webContentResolver;
     
-    private ArtifactResolver artifactResolver;
-    
-    private ArtifactRepository localArtifactRepository;
-    
-    private List remoteArtifactRepositories;
-
     /**
      * Creates a manager with the specified overlays.
      * <p/>
@@ -88,7 +76,7 @@ public class OverlayManager
      * @throws MojoExecutionException 
      */
     public OverlayManager( List overlays, MavenProject project, String defaultIncludes, String defaultExcludes,
-                           Overlay currentProjectOverlay, ArtifactFactory artifactFactory, ArtifactResolver artifactResolver, ArtifactRepository localArtifactRepository, List remoteArtifactRepositories )
+                           Overlay currentProjectOverlay, WebContentResolver webContentResolver)
         throws MojoExecutionException
     {
         this.overlays = new ArrayList();
@@ -97,13 +85,7 @@ public class OverlayManager
             this.overlays.addAll( overlays );
         }
         this.project = project;
-
-        
-        this.artifactFactory = artifactFactory;
-        this.artifactResolver = artifactResolver;
-        this.localArtifactRepository = localArtifactRepository;
-        this.remoteArtifactRepositories = remoteArtifactRepositories;
-        
+        this.webContentResolver = webContentResolver;
         this.artifactsOverlays = getOverlaysAsArtifacts();
 
         // Initialize
@@ -312,7 +294,8 @@ public class OverlayManager
                 	result.add(artifact);
                 	
 					if (artifactType == ARTIFACT_WAR_OVERLAY_CLASSES ) {
-						Artifact resolvedWebContent = getResolvedWebContent(artifact);
+						
+						Artifact resolvedWebContent = webContentResolver.getResolvedWebContent(artifact);
 						result.add(resolvedWebContent);
 					}
 				}
@@ -321,27 +304,6 @@ public class OverlayManager
         return result;
     }
     
-    private Artifact getResolvedWebContent(Artifact webClassesArtifact) throws MojoExecutionException 
-    {
-    	Artifact newArtifact =
-                artifactFactory.createArtifactWithClassifier(webClassesArtifact.getGroupId(), webClassesArtifact.getArtifactId(), webClassesArtifact
-                    .getVersion(), "war-overlay", "webcontent");
-    	
-    	newArtifact.setScope(webClassesArtifact.getScope());
-    	
-    	try 
-    	{
-			artifactResolver.resolve(newArtifact, remoteArtifactRepositories, localArtifactRepository);
-		} 
-    	catch (AbstractArtifactResolutionException e) 
-    	{
-            throw new MojoExecutionException("not found in any repository: " + webClassesArtifact.getId(), e);
-		}
-    	
-		return newArtifact;
-	}
-
-
 	private int getArtifactType(Artifact artifact)
     {
         if (artifact != null)

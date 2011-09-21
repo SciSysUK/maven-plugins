@@ -19,12 +19,14 @@ package org.apache.maven.plugin.war.overlay;
  * under the License.
  */
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.factory.DefaultArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.DefaultArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.DefaultArtifactResolver;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.plugin.war.Overlay;
 import org.apache.maven.plugin.war.stub.MavenProjectArtifactsStub;
@@ -42,7 +44,14 @@ public class OverlayManagerTest
     extends PlexusTestCase
 {
 
-    public static final String DEFAULT_INCLUDES = "**/**";
+    private static final WebContentResolver webContentResolver = new WebContentResolver() {
+		
+		public Artifact getResolvedWebContent(Artifact webClassesArtifact) throws MojoExecutionException {
+			return null;
+		}
+	};
+
+	public static final String DEFAULT_INCLUDES = "**/**";
 
     public static final String DEFAULT_EXCLUDES = "META-INF/MANIFEST.MF";
 	ArtifactFactory artifactFactory = new DefaultArtifactFactory();
@@ -60,7 +69,7 @@ public class OverlayManagerTest
         {
             final Overlay currentProjectOVerlay = Overlay.createInstance();
             OverlayManager manager = new OverlayManager( overlays, project, DEFAULT_INCLUDES, DEFAULT_EXCLUDES,
-                                                         currentProjectOVerlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories );
+                                                         currentProjectOVerlay, webContentResolver);
             assertNotNull( manager.getOverlays() );
             assertEquals( 1, manager.getOverlays().size() );
             assertEquals( currentProjectOVerlay, manager.getOverlays().get( 0 ) );
@@ -86,7 +95,7 @@ public class OverlayManagerTest
         {
             final Overlay overlay = currentProjectOverlay;
             OverlayManager manager = new OverlayManager( overlays, project, DEFAULT_INCLUDES, DEFAULT_EXCLUDES,
-                                                         overlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories  );
+                                                         overlay, webContentResolver);
             assertNotNull( manager.getOverlays() );
             assertEquals( 2, manager.getOverlays().size() );
             assertEquals( overlay, manager.getOverlays().get( 0 ) );
@@ -114,7 +123,7 @@ public class OverlayManagerTest
         {
             final Overlay currentProjectOverlay = Overlay.createInstance();
             OverlayManager manager = new OverlayManager( overlays, project, DEFAULT_INCLUDES, DEFAULT_EXCLUDES,
-                                                         currentProjectOverlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories );
+                                                         currentProjectOverlay, webContentResolver);
             assertNotNull( manager.getOverlays() );
             assertEquals( 2, manager.getOverlays().size() );
             assertEquals( Overlay.createInstance(), manager.getOverlays().get( 0 ) );
@@ -141,7 +150,7 @@ public class OverlayManagerTest
         try
         {
             final Overlay currentProjectOVerlay = Overlay.createInstance();
-            new OverlayManager( overlays, project, DEFAULT_INCLUDES, DEFAULT_EXCLUDES, currentProjectOVerlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories  );
+            new OverlayManager( overlays, project, DEFAULT_INCLUDES, DEFAULT_EXCLUDES, currentProjectOVerlay, webContentResolver);
             fail( "Should have failed to validate an unknown overlay" );
         }
         catch ( InvalidOverlayConfigurationException e )
@@ -168,7 +177,7 @@ public class OverlayManagerTest
         try
         {
             OverlayManager manager = new OverlayManager( overlays, project, DEFAULT_INCLUDES, DEFAULT_EXCLUDES,
-                                                         currentProjectOverlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories  );
+                                                         currentProjectOverlay, webContentResolver);
             assertNotNull( manager.getOverlays() );
             assertEquals( 3, manager.getOverlays().size() );
             assertEquals( overlays.get( 0 ), manager.getOverlays().get( 0 ) );
@@ -202,7 +211,7 @@ public class OverlayManagerTest
         {
             final Overlay currentProjectOverlay = Overlay.createInstance();
             OverlayManager manager = new OverlayManager( overlays, project, DEFAULT_INCLUDES, DEFAULT_EXCLUDES,
-                                                         currentProjectOverlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories );
+                                                         currentProjectOverlay, webContentResolver);
             assertNotNull( manager.getOverlays() );
             assertEquals( 3, manager.getOverlays().size() );
             assertEquals( currentProjectOverlay, manager.getOverlays().get( 0 ) );

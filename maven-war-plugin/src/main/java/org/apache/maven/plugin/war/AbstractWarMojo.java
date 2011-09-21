@@ -28,8 +28,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.maven.archiver.MavenArchiveConfiguration;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
@@ -38,6 +40,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.war.overlay.OverlayManager;
+import org.apache.maven.plugin.war.overlay.WebContentResolver;
 import org.apache.maven.plugin.war.packaging.DependenciesAnalysisPackagingTask;
 import org.apache.maven.plugin.war.packaging.OverlayPackagingTask;
 import org.apache.maven.plugin.war.packaging.SaveWebappStructurePostPackagingTask;
@@ -464,8 +467,9 @@ public abstract class AbstractWarMojo
         final long startTime = System.currentTimeMillis();
         getLog().info( "Assembling webapp [" + project.getArtifactId() + "] in [" + webappDirectory + "]" );
 
-        final OverlayManager overlayManager =
-            new OverlayManager( overlays, project, dependentWarIncludes, dependentWarExcludes, currentProjectOverlay, artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories );
+				final OverlayManager overlayManager = new OverlayManager(overlays, project, dependentWarIncludes,
+						dependentWarExcludes, currentProjectOverlay, new DefaultWebContentResolver(artifactFactory, artifactResolver, localArtifactRepository, remoteArtifactRepositories));
+				
         final List packagingTasks = getPackagingTasks( overlayManager );
         List defaultFilterWrappers = null;
         try
@@ -566,7 +570,7 @@ public abstract class AbstractWarMojo
         return postPackagingTasks;
     }
 
-    /**
+	/**
      * WarPackagingContext default implementation
      */
     private class DefaultWarPackagingContext
